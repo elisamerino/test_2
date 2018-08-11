@@ -1,8 +1,11 @@
 window.onload = function() {
 	var canvas = document.getElementsByTagName('canvas')[0];
 	var ctx = canvas.getContext('2d');
-	document.getElementById('start-button').onclick = function() {
+	var startButton = document.getElementById('start-button');
+	startButton.onclick = function() {
+		startButton.classList.toggle('pressed');
 		startGame();
+		console.log(startButton);
 	};
 
 	function startGame() {
@@ -10,6 +13,10 @@ window.onload = function() {
 		bg.src = './images/bg.png';
 		var bird = new Image();
 		bird.src = './images/flappy.png';
+		var obstacleBot = new Image();
+		obstacleBot.src = './images/obstacle_bottom.png';
+		var obstacleTop = new Image();
+		obstacleTop.src = './images/obstacle_top.png';
 
 		var backgroundImage = {
 			bg: bg,
@@ -31,26 +38,64 @@ window.onload = function() {
 		};
 
 		var bird = {
-			//birdw: birdw, //width&height
-			//birdh: birdh,
+			bird: bird,
+			//width: 20, //width&height
+			height: 50,
 			speedX: 0,
 			speedY: 0,
-			gravity: 1,
+			gravity: 10,
 			gravitySpeed: 0.9,
+
+			move: function() {
+				this.height += this.gravity;
+				this.gravity = 10;
+				this.gravitySpeed++;
+			},
+
 			drawbird: function() {
-				ctx.drawImage(this.bird, 50, 50);
+				ctx.save();
+				//	ctx.rotate(this.gravitySpeed * Math.PI / 180);
+				ctx.drawImage(this.bird, 75, this.height, 50, 35);
+				ctx.restore();
 			}
 		};
 
+		var obstacleBot = {
+			obstacleBot: obstacleBot,
+			x: 500,
+			move: function() {
+				this.x -= 10;
+			},
+			drawobup: function() {
+				ctx.save();
+				//	ctx.rotate(this.gravitySpeed * Math.PI / 180);
+				console.log(this.x);
+				ctx.drawImage(this.obstacleBot, this.x, 0);
+				ctx.restore();
+			}
+		};
+
+		document.onkeydown = function(e) {
+			//bird.gravitySpeed -= 2;
+			bird.gravity *= -1; // key 'W'
+			console.log('up');
+		};
 		function updateCanvas() {
 			backgroundImage.move();
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
 			backgroundImage.draw();
+			bird.move();
 			bird.drawbird();
+			obstacleBot.move();
+			obstacleBot.drawobup();
 			//		console.log(backgroundImage);
 		}
 		setInterval(function() {
 			updateCanvas();
 		}, 5000 / 30);
+
+		if (bird.height <= 0) {
+			clearInterval();
+		}
 	}
 };

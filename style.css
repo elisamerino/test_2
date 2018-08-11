@@ -20,7 +20,9 @@ body button {
 body button:hover {
 	background-color: #a2cc3a;
 }
-
+.pressed {
+	background-color: #507255;
+}
 canvas {
 	border: 2px solid #a2cc3a;
 }
