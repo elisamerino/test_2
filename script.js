@@ -1,11 +1,13 @@
 window.onload = function() {
 	var canvas = document.getElementsByTagName('canvas')[0];
 	var ctx = canvas.getContext('2d');
+	var cvheight = ctx.canvas.height;
+	var interval = 20;
+	var speed = -10;
 	var startButton = document.getElementById('start-button');
 	startButton.onclick = function() {
 		startButton.classList.toggle('pressed');
 		startGame();
-		console.log(startButton);
 	};
 
 	function startGame() {
@@ -21,15 +23,14 @@ window.onload = function() {
 		var backgroundImage = {
 			bg: bg,
 			bgx: 0,
-			speed: -10,
 			move: function() {
-				this.bgx += this.speed;
+				this.bgx += speed;
 				this.bgx %= canvas.width;
 			},
 			draw: function() {
 				ctx.drawImage(this.bg, this.bgx, 0);
 
-				if (this.speed < 0) {
+				if (speed < 0) {
 					ctx.drawImage(this.bg, this.bgx + this.bg.width, 0);
 				} else {
 					ctx.drawImage(this.bg, this.bfx - this.bg.width, 0);
@@ -60,17 +61,49 @@ window.onload = function() {
 			}
 		};
 
-		var obstacleBot = {
+		var obstacles = {
+			//to be fixed: push obstacles in array, update the array every n intervalId
+			obstacleArray: [],
 			obstacleBot: obstacleBot,
-			x: 500,
+			obstacleTop: obstacleTop,
+			newx: canvas.width,
+
+			//x: Math.floor(Math.random() * Math.floor(canvas.width)),
+			gap: Math.floor(Math.random() * Math.floor(100) - 520),
+			bottY: Math.floor(Math.random() * Math.floor(220) + 180),
+			//createObstacles: function(){},
+
+			pushObstacles: function() {
+				var gapX = Math.floor(Math.random() * Math.floor(100) + 100);
+				this.obstacleArray.push(canvas.width + gapX);
+			},
 			move: function() {
-				this.x -= 10;
+				for (i = 0; i < this.obstacleArray.length; i++) {
+					this.obstacleArray[i] -= 10;
+				}
+				console.log(this.obstacleArray);
+				//this.obstacleArray.map((x) => console.log((x += speed)));
 			},
 			drawobup: function() {
 				ctx.save();
-				//	ctx.rotate(this.gravitySpeed * Math.PI / 180);
-				console.log(this.x);
-				ctx.drawImage(this.obstacleBot, this.x, 0);
+				//this.obstacleArray.forEach((element) => {
+				this.obstacleArray.map((x) => {
+					ctx.drawImage(
+						this.obstacleBot,
+						x,
+						this.bottY,
+						this.obstacleBot.width / 2,
+						this.obstacleBot.height / 2
+					);
+					ctx.drawImage(
+						this.obstacleTop,
+						x,
+						this.bottY + this.gap,
+						this.obstacleBot.width / 2,
+						this.obstacleBot.height / 2
+					);
+				});
+				//});
 				ctx.restore();
 			}
 		};
@@ -86,16 +119,24 @@ window.onload = function() {
 			backgroundImage.draw();
 			bird.move();
 			bird.drawbird();
-			obstacleBot.move();
-			obstacleBot.drawobup();
+			//console.log(cvheight);
+			obstacles.move();
+			obstacles.drawobup();
 			//		console.log(backgroundImage);
 		}
-		setInterval(function() {
-			updateCanvas();
-		}, 5000 / 30);
 
-		if (bird.height <= 0) {
-			clearInterval();
-		}
+		var intervalId = setInterval(function() {
+			interval++;
+			//console.log('interval:', interval);
+			updateCanvas();
+			if (interval % 20 === 0) {
+				obstacles.pushObstacles();
+			}
+			if (bird.height >= cvheight) {
+				clearInterval(intervalId);
+				ctx.fillStyle = 'green';
+				ctx.fillText('YOU LOST', 240, 100);
+			}
+		}, 5000 / 30);
 	}
 };
